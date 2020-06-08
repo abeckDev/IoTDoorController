@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Permissions;
@@ -124,6 +125,15 @@ namespace AbeckDev.DoorController.DeviceClient
             {
                 //Do Implementation for Open Door
 
+                //Check if door exists
+                if (!doorRegistrations.Exists(d => d.ID == doorNumber) && doorNumber != 10)
+                {
+                    //You picked the wrong house fool
+                    throw new Exception($"Door {doorNumber} is not a registered door!");
+                }
+
+                Console.WriteLine($"Opening door {doorNumber}");
+
 
                 DeviceStatus = Status.ready;
                 // Acknowledge the direct method call with a 200 success message.
@@ -133,7 +143,7 @@ namespace AbeckDev.DoorController.DeviceClient
             catch (Exception ex)
             {
                 // Error Handling
-                string errorMsg = "{\"result\":\"Error in Methond " + methodRequest.Name + ": " + ex.Message + "\"}";
+                string errorMsg = "{\"result\":\"Error in Method " + methodRequest.Name + ": " + ex.Message + "\"}";
                 SendErrorTelemetryAsync(errorMsg);
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(errorMsg), 500));
             }
@@ -227,8 +237,8 @@ namespace AbeckDev.DoorController.DeviceClient
                 //Start Telemetry Send Loop
                 SendTelemetryAsync(cts.Token);
 
-                Console.WriteLine("Now what? ...");
-                Console.ReadKey();
+                
+                Console.ReadLine();
                 cts.Cancel();
             }
             catch (Exception ex)
