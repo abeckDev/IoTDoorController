@@ -83,18 +83,7 @@ namespace AbeckDev.DoorController.DeviceClient
             var payloadString = Encoding.UTF8.GetString(methodRequest.Data).Replace("\"", "");
 
             int doorNumber = Int32.Parse(payloadString);
-
-            //// Pick up variables from the request payload, with the field name specified in IoT Central.
-            //var payloadString = Encoding.UTF8.GetString(methodRequest.Data);
-            ////var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(payloadString);
-
-            //// Parse the input string for name/value pair.
-            ////string key = dict.Keys.ElementAt(0);
-            ////int customerNumber = Int32.Parse(dict.Values.ElementAt(0));
-            //int customerNumber = Int32.Parse(payloadString);
-
             Console.WriteLine($"Received the command to Open Door{doorNumber}");
-
             try
             {
                 //Do Implementation for Open Door
@@ -112,9 +101,6 @@ namespace AbeckDev.DoorController.DeviceClient
                 SendErrorTelemetryAsync(errorMsg);
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(errorMsg), 500));
             }
-            
-            
-
         }
 
         static async void SendErrorTelemetryAsync(string message = "")
@@ -192,8 +178,6 @@ namespace AbeckDev.DoorController.DeviceClient
                     deviceClient = Microsoft.Azure.Devices.Client.DeviceClient.Create(result.AssignedHub, auth, TransportType.Mqtt);
                 }
                 greenMessage("Device successfully connected to Azure IoT Central!");
-
-               
 
                 //Send Device Properties
                 SendDevicePropertiesAsync().GetAwaiter().GetResult();
