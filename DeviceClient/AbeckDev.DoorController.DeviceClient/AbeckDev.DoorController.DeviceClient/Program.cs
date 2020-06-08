@@ -56,9 +56,6 @@ namespace AbeckDev.DoorController.DeviceClient
         public static List<DoorRegistration> DoorRegistrationBuilder(IConfiguration configuration)
         {
             List<DoorRegistration> doorRegistrations = new List<DoorRegistration>();
-
-
-
             var valuesSection = configuration.GetSection("RemoteDoors");
             foreach (IConfigurationSection section in valuesSection.GetChildren())
             {
@@ -81,14 +78,12 @@ namespace AbeckDev.DoorController.DeviceClient
                     redMessage("SKIPPING!");
                 }
             }
-
             return doorRegistrations;
         }
 
         public static async Task<DeviceRegistrationResult> RegisterDeviceAsync(SecurityProviderSymmetricKey security)
         {
             Console.WriteLine("Register device...");
-
             using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly))
             {
                 ProvisioningDeviceClient provClient =
@@ -111,7 +106,6 @@ namespace AbeckDev.DoorController.DeviceClient
             await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
             greenMessage($"Sent device properties: {JsonSerializer.Serialize(reportedProperties)}");
         }
-
         static Task<MethodResponse> CmdDoorAction(MethodRequest methodRequest, object userContext)
         {
             //Door needs to be triggered
@@ -123,17 +117,15 @@ namespace AbeckDev.DoorController.DeviceClient
             Console.WriteLine($"Received the command to Open Door{doorNumber}");
             try
             {
-                //Do Implementation for Open Door
-
                 //Check if door exists
                 if (!doorRegistrations.Exists(d => d.ID == doorNumber) && doorNumber != 10)
                 {
-                    //You picked the wrong house fool
+                    //Door does not exist
                     throw new Exception($"Door {doorNumber} is not a registered door!");
                 }
 
                 Console.WriteLine($"Opening door {doorNumber}");
-
+                //ToDo: Open the Door Code
 
                 DeviceStatus = Status.ready;
                 // Acknowledge the direct method call with a 200 success message.
@@ -163,7 +155,6 @@ namespace AbeckDev.DoorController.DeviceClient
             var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
             await deviceClient.SendEventAsync(telemetryMessage);
             greenMessage($"Telemetry sent {DateTime.Now.ToShortTimeString()}");
-
         }
 
         static async void SendTelemetryAsync(CancellationToken token)
