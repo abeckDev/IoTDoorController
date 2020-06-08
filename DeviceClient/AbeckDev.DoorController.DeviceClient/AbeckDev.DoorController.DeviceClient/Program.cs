@@ -29,7 +29,7 @@ namespace AbeckDev.DoorController.DeviceClient
         static Status DeviceStatus = Status.ready;
         static Microsoft.Azure.Devices.Client.DeviceClient deviceClient;
         static TwinCollection reportedProperties = new TwinCollection();
-        static int intervalInMilliseconds = 60000;
+        static int intervalInMilliseconds = 900000;
         static List<DoorRegistration> doorRegistrations;
         static string IotCentralGlobalDeviceEndpoint;
         static string IotCentralScopeId;
@@ -81,6 +81,14 @@ namespace AbeckDev.DoorController.DeviceClient
             return doorRegistrations;
         }
 
+        public static void ResetDoorActionCounter()
+        {
+            foreach (var door in doorRegistrations)
+            {
+                door.ActionCount = 0;
+            }
+        }
+
         public static async Task<DeviceRegistrationResult> RegisterDeviceAsync(SecurityProviderSymmetricKey security)
         {
             Console.WriteLine("Register device...");
@@ -126,15 +134,17 @@ namespace AbeckDev.DoorController.DeviceClient
                 Console.WriteLine($"Opening door {doorNumber}");
                 //ToDo: Open the Door Code
 
+
                 DeviceStatus = Status.ready;
                 // Acknowledge the direct method call with a 200 success message.
-                string result = "{\"result\":\"Executed direct method: " + methodRequest.Name + "\"}";
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(result), 200));
+                string resultMsg = "{\"CommandResponse\":\"Executed direct method: " + methodRequest.Name + "successfully\" }";
+                SendSuccessTelemetryAsync(resultMsg);
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(resultMsg), 200));
             }
             catch (Exception ex)
             {
                 // Error Handling
-                string errorMsg = "{\"result\":\"Error in Method " + methodRequest.Name + ": " + ex.Message + "\"}";
+                string errorMsg = "{\"CommandResponse\":\"Error in Method " + methodRequest.Name + ": " + ex.Message + "\"}";
                 SendErrorTelemetryAsync(errorMsg);
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(errorMsg), 500));
             }
@@ -148,12 +158,27 @@ namespace AbeckDev.DoorController.DeviceClient
             var telemetryDataPoint = new
             {
                 DeviceStatus = DeviceStatus.ToString(),
-                ErrorMessage = message,
+                EventMessage = message,
             };
             var telemetryMessageString = JsonSerializer.Serialize(telemetryDataPoint);
             var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
             await deviceClient.SendEventAsync(telemetryMessage);
             greenMessage($"Telemetry sent {DateTime.Now.ToShortTimeString()}");
+        }
+
+        static async void SendSuccessTelemetryAsync(string message = "")
+        {
+            greenMessage("Sending successfull Telemetry Event to ioT Central");
+            DeviceStatus = Status.ready;
+            //Send Telemetry
+            var telemetryDataPoint = new
+            {
+                DeviceStatus = DeviceStatus.ToString(),
+                EventMessage = message,
+            };
+            var telemetryMessageString = JsonSerializer.Serialize(telemetryDataPoint);
+            var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
+            await deviceClient.SendEventAsync(telemetryMessage);
         }
 
         static async void SendTelemetryAsync(CancellationToken token)
@@ -163,11 +188,24 @@ namespace AbeckDev.DoorController.DeviceClient
                 //Do update stuff
                 Console.WriteLine("Time for an Update!");
                 Console.WriteLine($"I am still standing at {DeviceLocation}");
-                
+
+                //Build Door Action String
+                var doorActionString = "";
+                string registeredDoorsReport = "";
+                foreach (var door in doorRegistrations)
+                {
+                    doorActionString += door.Name + ": " + door.ActionCount + "\n";
+                    registeredDoorsReport += $"{door.Name}: ID={door.ID}, SystemCode={door.SystemCode}, DeviceCode={door.DeviceCode}; \n";
+                }
+
+                //Build Saved Frequencies
+
                 //Send Telemetry
                 var telemetryDataPoint = new
                 {
                     DeviceStatus = DeviceStatus.ToString(),
+                    DoorActions = doorActionString,
+                    RegisteredDoors = registeredDoorsReport,
                 };
                 var telemetryMessageString = JsonSerializer.Serialize(telemetryDataPoint);
                 var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
