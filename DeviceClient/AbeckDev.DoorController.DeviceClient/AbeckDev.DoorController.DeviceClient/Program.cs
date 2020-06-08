@@ -109,7 +109,6 @@ namespace AbeckDev.DoorController.DeviceClient
         static Task<MethodResponse> CmdDoorAction(MethodRequest methodRequest, object userContext)
         {
             //Door needs to be triggered
-
             //Extract payload string
             var payloadString = Encoding.UTF8.GetString(methodRequest.Data).Replace("\"", "");
 
@@ -228,7 +227,7 @@ namespace AbeckDev.DoorController.DeviceClient
                 //Start Telemetry Send Loop
                 SendTelemetryAsync(cts.Token);
 
-                
+                //Cancellation Event
                 Console.ReadLine();
                 cts.Cancel();
             }
