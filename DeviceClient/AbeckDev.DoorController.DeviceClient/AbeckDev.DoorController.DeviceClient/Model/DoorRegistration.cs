@@ -11,5 +11,7 @@ namespace AbeckDev.DoorController.DeviceClient.Model
         public string SystemCode { get; set; }
 
         public int DeviceCode { get; set; }
+
+        public int ActionCount { get; set; } = 0;
     }
 }
