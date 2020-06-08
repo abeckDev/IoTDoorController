@@ -1,10 +1,13 @@
-﻿using Microsoft.Azure.Devices;
+﻿using AbeckDev.DoorController.DeviceClient.Model;
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Security.Permissions;
 using System.Text;
@@ -26,6 +29,7 @@ namespace AbeckDev.DoorController.DeviceClient
         static Microsoft.Azure.Devices.Client.DeviceClient deviceClient;
         static TwinCollection reportedProperties = new TwinCollection();
         static int intervalInMilliseconds = 60000;
+        static List<DoorRegistration> doorRegistrations;
         static string IotCentralGlobalDeviceEndpoint;
         static string IotCentralScopeId;
         static string IotCentralDeviceId;
@@ -46,6 +50,38 @@ namespace AbeckDev.DoorController.DeviceClient
         static void redMessage(string text)
         {
             colorMessage(text, ConsoleColor.Red);
+        }
+
+        public static List<DoorRegistration> DoorRegistrationBuilder(IConfiguration configuration)
+        {
+            List<DoorRegistration> doorRegistrations = new List<DoorRegistration>();
+
+
+
+            var valuesSection = configuration.GetSection("RemoteDoors");
+            foreach (IConfigurationSection section in valuesSection.GetChildren())
+            {
+                try
+                {
+                    DoorRegistration door = new DoorRegistration();
+                    door.Name = section.GetValue<string>("Name");
+                    door.ID = section.GetValue<int>("ID");
+                    door.SystemCode = section.GetValue<string>("SystemCode");
+                    door.DeviceCode = section.GetValue<int>("DeviceCode");
+                    Console.WriteLine($"Found Registration for Door: {door.Name}");
+                    doorRegistrations.Add(door);
+                    Console.WriteLine($"Successfully added door {door.Name} with ID {door.ID} and SystemCode {door.SystemCode} + {door.DeviceCode} to active door registration.");
+
+                }
+                catch (Exception ex)
+                {
+                    redMessage($"Error while Adding door {section.GetValue<string>("Name")}");
+                    redMessage("Error Message: " + ex.Message);
+                    redMessage("SKIPPING!");
+                }
+            }
+
+            return doorRegistrations;
         }
 
         public static async Task<DeviceRegistrationResult> RegisterDeviceAsync(SecurityProviderSymmetricKey security)
@@ -161,6 +197,7 @@ namespace AbeckDev.DoorController.DeviceClient
             IotCentralDeviceId = configuration["IotCentralDeviceId"];
             IotCentralPrimaryKey = configuration["IotCentralPrimaryKey"];
             DeviceLocation = configuration["DeviceLocation"];
+            doorRegistrations = DoorRegistrationBuilder(configuration);
             //Loaded Configuration
 
             try
