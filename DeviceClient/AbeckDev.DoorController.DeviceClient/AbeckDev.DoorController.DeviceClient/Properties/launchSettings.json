@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "AbeckDev.DoorController.DeviceClient": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IotCentralGlobalDeviceEndpoint": "global.azure-devices-provisioning.net",
+        "IotCentralDeviceId": "DoorControllerDummyDevice",
+        "IotCentralScopeId": "0ne0011657B",
+        "DeviceLocation": "Garage",
+        "IotCentralPrimaryKey": "Td/XhWlHH2IVVx9zyoZnfRCDeKJJOU+t2CdKm6ZJ0Hw="
+      }
+    }
+  }
+}
