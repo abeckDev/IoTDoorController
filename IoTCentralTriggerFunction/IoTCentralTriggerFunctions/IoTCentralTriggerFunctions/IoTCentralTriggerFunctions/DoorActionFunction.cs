@@ -54,7 +54,9 @@ namespace IoTCentralTriggerFunctions
                 string IoTDeviceName = Environment.GetEnvironmentVariable("IoTDeviceName");
                 string IoTComponentName = Environment.GetEnvironmentVariable("IoTComponentName");
                 string CommandName = Environment.GetEnvironmentVariable("CommandName");
-                string IoTCoreAccessToken = Uri.EscapeUriString(Environment.GetEnvironmentVariable("IoTCentralToken"));
+
+                
+                string IoTCoreAccessToken = Uri.EscapeDataString(Environment.GetEnvironmentVariable("IoTCentralToken"));
 
 
                 string ApiUrl = $"https://{IoTAppName}.azureiotcentral.com/api/preview/devices/{IoTDeviceName}/components/{IoTComponentName}/commands/{CommandName}?access_token={IoTCoreAccessToken}";
