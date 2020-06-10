@@ -15,7 +15,7 @@ namespace AbeckDev.DoorController.DeviceClient.Model
         public int ActionCount { get; set; } = 0;
     }
 
-    enum Status
+    public enum Status
     {
         ready,
         offline,

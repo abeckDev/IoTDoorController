@@ -1,9 +1,12 @@
 ﻿using AbeckDev.DoorController.DeviceClient.Model;
 using static AbeckDev.DoorController.DeviceClient.Service.ConsoleHelperService;
+using static AbeckDev.DoorController.DeviceClient.Service.DeviceService;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Azure.Devices.Client;
+using System.Threading.Tasks;
 
 namespace AbeckDev.DoorController.DeviceClient.Service
 {
@@ -36,6 +39,5 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             }
             return doorRegistrations;
         }
-
     }
 }
