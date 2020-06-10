@@ -1,7 +1,6 @@
 ﻿using AbeckDev.DoorController.DeviceClient.Model;
 using AbeckDev.DoorController.DeviceClient.Service;
 using static AbeckDev.DoorController.DeviceClient.Service.ConsoleHelperService;
-
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
