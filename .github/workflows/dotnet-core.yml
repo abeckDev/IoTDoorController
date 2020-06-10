@@ -1,11 +1,14 @@
-name: .NET Core Build
+name: Device Client - .NET Core Build
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
+defaults:
+  run:
+    shell: bash
+    working-directory: /DeviceClient/AbeckDev.DoorController.DeviceClient/
 jobs:
   build:
 
