@@ -1,4 +1,4 @@
-name: Device Client Docker Build
+name: Device Client - Docker Build
 
 on:
   push:
