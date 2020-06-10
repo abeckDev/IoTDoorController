@@ -37,5 +37,5 @@ jobs:
         # Artifact name
         name: Drop
         # A file, directory or wildcard pattern that describes what to upload
-        path: /home/runner/work/IoTDoorController/drop.zip
+        path: /home/runner/work/IoTDoorController/home/runner/work/IoTDoorController/publish/
     
