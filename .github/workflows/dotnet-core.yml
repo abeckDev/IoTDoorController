@@ -21,8 +21,10 @@ jobs:
     - name: Directory Content
       run: ls
     - name: Install dependencies
+      working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
       run: dotnet restore
     - name: Build
+      working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
       run: dotnet build --configuration Release --no-restore
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+    - name: Debug pwd
+      run: pwd; ls
