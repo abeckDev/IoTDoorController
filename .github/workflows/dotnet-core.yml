@@ -29,13 +29,13 @@ jobs:
     - name: dotnet publish
       run: mkdir -p /home/runner/work/IoTDoorController/publish; dotnet publish -c Release -o /home/runner/work/IoTDoorController/publish
       working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
-    - name: Zip Release
-      uses: TheDoctor0/zip-release@v0.3.0
+    - name: Build Drop Archive
+      run: zip /home/runner/work/IoTDoorController/drop.zip -r /home/runner/work/IoTDoorController/publish/*
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
       with:
-        # Filename for archive
-        filename: drop.zip
-        # Base path for archive files
-        path: /home/runner/work/IoTDoorController/publish/*
-        # Working directory before zipping
-    - name: Debug pwd
-      run: pwd; ls
+        # Artifact name
+        name: Drop
+        # A file, directory or wildcard pattern that describes what to upload
+        path: /home/runner/work/IoTDoorController/drop.zip
+    
