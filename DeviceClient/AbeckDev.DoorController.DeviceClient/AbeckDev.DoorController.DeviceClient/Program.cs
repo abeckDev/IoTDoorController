@@ -1,4 +1,6 @@
 ﻿using AbeckDev.DoorController.DeviceClient.Model;
+using AbeckDev.DoorController.DeviceClient.Service;
+using static AbeckDev.DoorController.DeviceClient.Service.ConsoleHelperService;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
@@ -15,20 +17,15 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace AbeckDev.DoorController.DeviceClient
 {
     class Program
     {
-        enum Status
-        {
-            ready,
-            offline,
-            error
-        }
+        
         static Status DeviceStatus = Status.ready;
         static Microsoft.Azure.Devices.Client.DeviceClient deviceClient;
-        static TwinCollection reportedProperties = new TwinCollection();
         static int intervalInMilliseconds = 900000;
         static List<DoorRegistration> doorRegistrations;
         static string IotCentralGlobalDeviceEndpoint;
@@ -37,83 +34,7 @@ namespace AbeckDev.DoorController.DeviceClient
         static string IotCentralPrimaryKey;
         static string DeviceLocation;
 
-        static void colorMessage(string text, ConsoleColor clr)
-        {
-            Console.ForegroundColor = clr;
-            Console.WriteLine(text);
-            Console.ResetColor();
-        }
-        static void greenMessage(string text)
-        {
-            colorMessage(text, ConsoleColor.Green);
-        }
-
-        static void redMessage(string text)
-        {
-            colorMessage(text, ConsoleColor.Red);
-        }
-
-        public static List<DoorRegistration> DoorRegistrationBuilder(IConfiguration configuration)
-        {
-            List<DoorRegistration> doorRegistrations = new List<DoorRegistration>();
-            var valuesSection = configuration.GetSection("RemoteDoors");
-            foreach (IConfigurationSection section in valuesSection.GetChildren())
-            {
-                try
-                {
-                    DoorRegistration door = new DoorRegistration();
-                    door.Name = section.GetValue<string>("Name");
-                    door.ID = section.GetValue<int>("ID");
-                    door.SystemCode = section.GetValue<string>("SystemCode");
-                    door.DeviceCode = section.GetValue<int>("DeviceCode");
-                    Console.WriteLine($"Found Registration for Door: {door.Name}");
-                    doorRegistrations.Add(door);
-                    Console.WriteLine($"Successfully added door {door.Name} with ID {door.ID} and SystemCode {door.SystemCode} + {door.DeviceCode} to active door registration.");
-
-                }
-                catch (Exception ex)
-                {
-                    redMessage($"Error while Adding door {section.GetValue<string>("Name")}");
-                    redMessage("Error Message: " + ex.Message);
-                    redMessage("SKIPPING!");
-                }
-            }
-            return doorRegistrations;
-        }
-
-        public static void ResetDoorActionCounter()
-        {
-            foreach (var door in doorRegistrations)
-            {
-                door.ActionCount = 0;
-            }
-        }
-
-        public static async Task<DeviceRegistrationResult> RegisterDeviceAsync(SecurityProviderSymmetricKey security)
-        {
-            Console.WriteLine("Register device...");
-            using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly))
-            {
-                ProvisioningDeviceClient provClient =
-                          ProvisioningDeviceClient.Create(IotCentralGlobalDeviceEndpoint, IotCentralScopeId, security, transport);
-
-                Console.WriteLine($"RegistrationID = {security.GetRegistrationID()}");
-
-                Console.Write("ProvisioningClient RegisterAsync...");
-                DeviceRegistrationResult result = await provClient.RegisterAsync();
-
-                Console.WriteLine($"{result.Status}");
-
-                return result;
-            }
-        }
-
-        static async Task SendDevicePropertiesAsync()
-        {
-            reportedProperties["Location"] = DeviceLocation;
-            await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-            greenMessage($"Sent device properties: {JsonSerializer.Serialize(reportedProperties)}");
-        }
+        
         static Task<MethodResponse> CmdDoorAction(MethodRequest methodRequest, object userContext)
         {
             //Door needs to be triggered
@@ -138,19 +59,19 @@ namespace AbeckDev.DoorController.DeviceClient
                 DeviceStatus = Status.ready;
                 // Acknowledge the direct method call with a 200 success message.
                 string resultMsg = "{\"CommandResponse\":\"Executed direct method: " + methodRequest.Name + "successfully\" }";
-                SendSuccessTelemetryAsync(resultMsg);
+                SendDeviceSuccessTelemetryAsync(resultMsg);
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(resultMsg), 200));
             }
             catch (Exception ex)
             {
                 // Error Handling
                 string errorMsg = "{\"CommandResponse\":\"Error in Method " + methodRequest.Name + ": " + ex.Message + "\"}";
-                SendErrorTelemetryAsync(errorMsg);
+                SendDeviceErrorTelemetryAsync(errorMsg);
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(errorMsg), 500));
             }
         }
 
-        static async void SendErrorTelemetryAsync(string message = "")
+        static async void SendDeviceErrorTelemetryAsync(string message = "")
         {
             redMessage("Something went wrong. Will report error immediatly!");
             DeviceStatus = Status.error;
@@ -166,7 +87,7 @@ namespace AbeckDev.DoorController.DeviceClient
             greenMessage($"Telemetry sent {DateTime.Now.ToShortTimeString()}");
         }
 
-        static async void SendSuccessTelemetryAsync(string message = "")
+        static async void SendDeviceSuccessTelemetryAsync(string message = "")
         {
             greenMessage("Sending successfull Telemetry Event to ioT Central");
             DeviceStatus = Status.ready;
@@ -218,6 +139,16 @@ namespace AbeckDev.DoorController.DeviceClient
             }
         }
 
+
+        //Needs dependencie
+        public static void ResetDoorActionCounter()
+        {
+            foreach (var door in doorRegistrations)
+            {
+                door.ActionCount = 0;
+            }
+        }
+
         static void Main(string[] args)
         {
             string version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
@@ -235,14 +166,14 @@ namespace AbeckDev.DoorController.DeviceClient
             IotCentralDeviceId = configuration["IotCentralDeviceId"];
             IotCentralPrimaryKey = configuration["IotCentralPrimaryKey"];
             DeviceLocation = configuration["DeviceLocation"];
-            doorRegistrations = DoorRegistrationBuilder(configuration);
+            doorRegistrations = DoorService.DoorRegistrationBuilder(configuration);
             //Loaded Configuration
 
             try
             {
                 using (var security = new SecurityProviderSymmetricKey(IotCentralDeviceId, IotCentralPrimaryKey, null))
                 {
-                    DeviceRegistrationResult result = RegisterDeviceAsync(security).GetAwaiter().GetResult();
+                    DeviceRegistrationResult result = DeviceService.RegisterDeviceAsync(security,IotCentralGlobalDeviceEndpoint,IotCentralScopeId).GetAwaiter().GetResult();
                     if (result.Status != ProvisioningRegistrationStatusType.Assigned)
                     {
                         Console.WriteLine("Failed to register Device");
