@@ -35,7 +35,7 @@ jobs:
         # Filename for archive
         filename: drop.zip
         # Base path for archive files
-        path: /home/runner/work/IoTDoorController/publish
+        path: /home/runner/work/IoTDoorController/publish/*
         # Working directory before zipping
     - name: Debug pwd
       run: pwd; ls
