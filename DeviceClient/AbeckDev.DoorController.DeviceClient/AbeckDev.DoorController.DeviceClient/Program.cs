@@ -24,7 +24,6 @@ namespace AbeckDev.DoorController.DeviceClient
 {
     class Program
     {
-        
         static Status DeviceStatus = Status.ready;
         static Microsoft.Azure.Devices.Client.DeviceClient deviceClient;
         static int intervalInMilliseconds = 900000;
@@ -38,6 +37,7 @@ namespace AbeckDev.DoorController.DeviceClient
 
         static void Main(string[] args)
         {
+            //Get Version from Properties
             string version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             Console.WriteLine($"Starting DoorController Device Client: {version}");
 
@@ -56,6 +56,7 @@ namespace AbeckDev.DoorController.DeviceClient
             doorRegistrations = DoorService.DoorRegistrationBuilder(configuration);
             //Loaded Configuration
 
+            //Try to register Device with IoT Hub
             try
             {
                 using (var security = new SecurityProviderSymmetricKey(IotCentralDeviceId, IotCentralPrimaryKey, null))
@@ -78,12 +79,12 @@ namespace AbeckDev.DoorController.DeviceClient
                 //Send Device Properties
                 deviceService.SendDevicePropertiesAsync().GetAwaiter().GetResult();
 
-                CancellationTokenSource cts = new CancellationTokenSource();
 
                 //Create Handler for direct method call
                 deviceClient.SetMethodHandlerAsync("DoorCommand", CmdDoorAction, null).Wait();
 
                 //Start Telemetry Send Loop
+                CancellationTokenSource cts = new CancellationTokenSource();
                 deviceService.SendDeviceTelemetryAsync(cts.Token);
 
                 //Cancellation Event
@@ -97,6 +98,12 @@ namespace AbeckDev.DoorController.DeviceClient
             }
         }
 
+
+        /// <summary>
+        /// Will Register the Device with IoT Central
+        /// </summary>
+        /// <param name="security"></param>
+        /// <returns></returns>
         public static async Task<DeviceRegistrationResult> RegisterDeviceAsync(SecurityProviderSymmetricKey security)
         {
             Console.WriteLine("Register device...");
@@ -117,9 +124,14 @@ namespace AbeckDev.DoorController.DeviceClient
         }
 
 
+        /// <summary>
+        /// Responses to DoorAction Direct Method executed by IoT Hub
+        /// </summary>
+        /// <param name="methodRequest">The request from the IoT Hub</param>
+        /// <param name="userContext"></param>
+        /// <returns></returns>
         public static Task<MethodResponse> CmdDoorAction(MethodRequest methodRequest, object userContext)
         {
-            //Door needs to be triggered
             //Extract payload string
             var payloadString = Encoding.UTF8.GetString(methodRequest.Data).Replace("\"", "");
             int doorNumber = Int32.Parse(payloadString);
@@ -129,7 +141,7 @@ namespace AbeckDev.DoorController.DeviceClient
                 //Check if door exists
                 if (!doorRegistrations.Exists(d => d.ID == doorNumber) && doorNumber != 10)
                 {
-                    //Door does not exist
+                    //Door does not exist/not registered
                     throw new Exception($"Door {doorNumber} is not a registered door!");
                 }
 
@@ -137,8 +149,9 @@ namespace AbeckDev.DoorController.DeviceClient
                 //ToDo: Open the Door Code
 
 
-                DeviceStatus = Status.ready;
+
                 // Acknowledge the direct method call with a 200 success message.
+                DeviceStatus = Status.ready;
                 string resultMsg = "{\"CommandResponse\":\"Executed direct method: " + methodRequest.Name + "successfully\" }";
                 deviceService.SendDeviceSuccessTelemetryAsync(resultMsg);
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(resultMsg), 200));

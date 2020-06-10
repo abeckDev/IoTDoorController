@@ -12,6 +12,11 @@ namespace AbeckDev.DoorController.DeviceClient.Service
 {
     public static class DoorService
     {
+        /// <summary>
+        /// Will register all doors to the Application based on the Config input
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
         public static List<DoorRegistration> DoorRegistrationBuilder(IConfiguration configuration)
         {
             List<DoorRegistration> doorRegistrations = new List<DoorRegistration>();

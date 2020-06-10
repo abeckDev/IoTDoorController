@@ -39,6 +39,11 @@ namespace AbeckDev.DoorController.DeviceClient.Service
 
         }
 
+
+        /// <summary>
+        /// Send the Device Properties to Azure IoT Hub
+        /// </summary>
+        /// <returns></returns>
         public async Task SendDevicePropertiesAsync()
         {
             TwinCollection reportedProperties = new TwinCollection();
@@ -49,6 +54,10 @@ namespace AbeckDev.DoorController.DeviceClient.Service
         }
 
 
+        /// <summary>
+        /// Will send a telemetry message with an error flag to Azure IoT Central
+        /// </summary>
+        /// <param name="message">The Message to send</param>
         public async void SendDeviceErrorTelemetryAsync(string message = "")
         {
             redMessage("Something went wrong. Will report error immediatly!");
@@ -65,7 +74,10 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             greenMessage($"Telemetry sent {DateTime.Now.ToShortTimeString()}");
         }
 
-
+        /// <summary>
+        /// Will send a telemetry message with a success flag to Azure IoT Central
+        /// </summary>
+        /// <param name="message"></param>
         public async void SendDeviceSuccessTelemetryAsync(string message = "")
         {
             greenMessage("Sending successfull Telemetry Event to ioT Central");
@@ -81,6 +93,10 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             await deviceClient.SendEventAsync(telemetryMessage);
         }
 
+        /// <summary>
+        /// The loop which will keep sending telemtry messages every <see cref="intervalInMilliseconds"/> to Azure IoT Central
+        /// </summary>
+        /// <param name="token"></param>
         public async void SendDeviceTelemetryAsync(CancellationToken token)
         {
             while (true)
