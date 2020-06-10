@@ -26,5 +26,16 @@ jobs:
     - name: Build
       working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
       run: dotnet build --configuration Release --no-restore
+    - name: dotnet publish
+      run: mkdir -p /home/runner/work/IoTDoorController/; publish dotnet publish -c Release -o /home/runner/work/IoTDoorController/publish
+      working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
+    - name: Zip Release
+      uses: TheDoctor0/zip-release@v0.3.0
+      with:
+        # Filename for archive
+        filename: drop.zip
+        # Base path for archive files
+        path: /home/runner/work/IoTDoorController/
+        # Working directory before zipping
     - name: Debug pwd
       run: pwd; ls
