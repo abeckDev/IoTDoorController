@@ -5,16 +5,16 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-defaults:
-  run:
-    shell: bash
-    working-directory: /DeviceClient/AbeckDev.DoorController.DeviceClient/
 jobs:
   build:
 
     runs-on: ubuntu-latest
 
     steps:
+    - name: Debug pwd
+      run: pwd
+    - name: Directory Content
+      run: ls
     - uses: actions/checkout@v2
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
