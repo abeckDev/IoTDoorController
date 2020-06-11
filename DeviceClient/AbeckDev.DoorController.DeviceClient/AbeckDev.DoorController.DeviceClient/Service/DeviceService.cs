@@ -71,7 +71,6 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             var telemetryMessageString = JsonSerializer.Serialize(telemetryDataPoint);
             var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
             await deviceClient.SendEventAsync(telemetryMessage);
-            greenMessage($"Telemetry sent {DateTime.Now.ToShortTimeString()}");
         }
 
         /// <summary>

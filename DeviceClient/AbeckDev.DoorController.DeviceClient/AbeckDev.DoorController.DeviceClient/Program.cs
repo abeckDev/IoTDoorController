@@ -1,7 +1,6 @@
 ﻿using AbeckDev.DoorController.DeviceClient.Model;
 using AbeckDev.DoorController.DeviceClient.Service;
 using static AbeckDev.DoorController.DeviceClient.Service.ConsoleHelperService;
-using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -9,15 +8,11 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Security.Permissions;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
+using AbeckDev.DoorController.DeviceClient.Extension;
 
 namespace AbeckDev.DoorController.DeviceClient
 {
@@ -26,6 +21,7 @@ namespace AbeckDev.DoorController.DeviceClient
         static Status DeviceStatus = Status.ready;
         static Microsoft.Azure.Devices.Client.DeviceClient deviceClient;
         static int intervalInMilliseconds = 900000;
+        static int coolDownintervallMilliseconds = 5000;
         static List<DoorRegistration> doorRegistrations;
         static string IotCentralGlobalDeviceEndpoint;
         static string IotCentralScopeId;
@@ -144,9 +140,40 @@ namespace AbeckDev.DoorController.DeviceClient
                     throw new Exception($"Door {doorNumber} is not a registered door!");
                 }
 
-                Console.WriteLine($"Opening door {doorNumber}");
-                //ToDo: Open the Door Code
+                //Get Door object
+                var door = DoorService.GetDoorById(doorRegistrations, doorNumber);
+                if (door.isLocked)
+                {
+                    //Door is locked
+                    string errorMsg = $"Door {door.Name} is in cooldown process/locked.";
+                    redMessage(errorMsg);
+                    throw new Exception(errorMsg);
+                }
+                //Check if door in Decimalmode
+                if (DoorService.isDecimalcodeMode(door))
+                {
+                    //Lock door to prevent other commands
+                    door.isLocked = true;
 
+                    //Use Decimal Mode
+                    Console.WriteLine($"Opening door {door.Name} using Decimalcode ");
+                    //Send Decimalcode
+                    var result = $"/opt/dotnet433helper/senddecimalcode.sh {door.Decimalcode}".Bash();
+                    Console.WriteLine(result);
+                    //Release the door after 5 seconds
+                    System.Threading.Thread.Sleep(coolDownintervallMilliseconds);
+                    door.isLocked = false;
+                }
+                else
+                {   
+                    //Lock door to prevent other commands
+                    door.isLocked = true;
+                    Console.WriteLine($"Opening door {door.Name} using System and Device  Code");
+                    //Release the door after 5 seconds
+                    System.Threading.Thread.Sleep(coolDownintervallMilliseconds);
+                    door.isLocked = false;
+                    throw new NotImplementedException("Not implemented yet");
+                }
 
 
                 // Acknowledge the direct method call with a 200 success message.
