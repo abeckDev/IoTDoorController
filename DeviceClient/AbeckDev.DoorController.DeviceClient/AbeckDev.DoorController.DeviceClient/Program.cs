@@ -1,7 +1,6 @@
 ﻿using AbeckDev.DoorController.DeviceClient.Model;
 using AbeckDev.DoorController.DeviceClient.Service;
 using static AbeckDev.DoorController.DeviceClient.Service.ConsoleHelperService;
-using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -14,7 +13,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AbeckDev.DoorController.DeviceClient.Extension;
-using Microsoft.Azure.Amqp.Framing;
 
 namespace AbeckDev.DoorController.DeviceClient
 {
