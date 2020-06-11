@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AbeckDev.DoorController.DeviceClient.Extension;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace AbeckDev.DoorController.DeviceClient
 {
@@ -22,6 +23,7 @@ namespace AbeckDev.DoorController.DeviceClient
         static Status DeviceStatus = Status.ready;
         static Microsoft.Azure.Devices.Client.DeviceClient deviceClient;
         static int intervalInMilliseconds = 900000;
+        static int coolDownintervallMilliseconds = 5000;
         static List<DoorRegistration> doorRegistrations;
         static string IotCentralGlobalDeviceEndpoint;
         static string IotCentralScopeId;
@@ -142,19 +144,36 @@ namespace AbeckDev.DoorController.DeviceClient
 
                 //Get Door object
                 var door = DoorService.GetDoorById(doorRegistrations, doorNumber);
-                
+                if (door.isLocked)
+                {
+                    //Door is locked
+                    string errorMsg = $"Door {door.Name} is in cooldown process/locked.";
+                    redMessage(errorMsg);
+                    throw new Exception(errorMsg);
+                }
                 //Check if door in Decimalmode
                 if (DoorService.isDecimalcodeMode(door))
                 {
+                    //Lock door to prevent other commands
+                    door.isLocked = true;
+
                     //Use Decimal Mode
                     Console.WriteLine($"Opening door {door.Name} using Decimalcode ");
                     //Send Decimalcode
                     var result = $"/opt/dotnet433helper/senddecimalcode.sh {door.Decimalcode}".Bash();
                     Console.WriteLine(result);
+                    //Release the door after 5 seconds
+                    System.Threading.Thread.Sleep(coolDownintervallMilliseconds);
+                    door.isLocked = false;
                 }
                 else
-                {
+                {   
+                    //Lock door to prevent other commands
+                    door.isLocked = true;
                     Console.WriteLine($"Opening door {door.Name} using System and Device  Code");
+                    //Release the door after 5 seconds
+                    System.Threading.Thread.Sleep(coolDownintervallMilliseconds);
+                    door.isLocked = false;
                     throw new NotImplementedException("Not implemented yet");
                 }
 

@@ -16,6 +16,8 @@ namespace AbeckDev.DoorController.DeviceClient.Model
 
         public int ActionCount { get; set; } = 0;
 
+        public bool isLocked { get; set; } = false;
+
     }
 
     public enum Status
