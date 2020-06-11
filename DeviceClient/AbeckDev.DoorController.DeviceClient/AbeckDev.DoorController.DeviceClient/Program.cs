@@ -9,15 +9,11 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Security.Permissions;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
+using AbeckDev.DoorController.DeviceClient.Extension;
 
 namespace AbeckDev.DoorController.DeviceClient
 {
@@ -144,9 +140,23 @@ namespace AbeckDev.DoorController.DeviceClient
                     throw new Exception($"Door {doorNumber} is not a registered door!");
                 }
 
-                Console.WriteLine($"Opening door {doorNumber}");
-                //ToDo: Open the Door Code
-
+                //Get Door object
+                var door = DoorService.GetDoorById(doorRegistrations, doorNumber);
+                
+                //Check if door in Decimalmode
+                if (DoorService.isDecimalcodeMode(door))
+                {
+                    //Use Decimal Mode
+                    Console.WriteLine($"Opening door {door.Name} using Decimalcode ");
+                    //Send Decimalcode
+                    var result = $"/opt/dotnet433helper/senddecimalcode.sh {door.Decimalcode}".Bash();
+                    Console.WriteLine(result);
+                }
+                else
+                {
+                    Console.WriteLine($"Opening door {door.Name} using System and Device  Code");
+                    throw new NotImplementedException("Not implemented yet");
+                }
 
 
                 // Acknowledge the direct method call with a 200 success message.
