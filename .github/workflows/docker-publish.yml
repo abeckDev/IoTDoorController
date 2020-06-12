@@ -59,12 +59,6 @@ jobs:
       
       - name: Download XML Starlet
         run: sudo apt-get update; sudo apt-get install xmlstarlet -y
-        
-      - name: Determine current Version
-        run: |
-          currentVersion=$(xmlstarlet sel -t -v '//Version' DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient.csproj)
-          echo "Current Version: $currentVersion"
-
       - name: Build image
         working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient
         run: docker build . --file Dockerfile --tag $IMAGE_NAME
@@ -92,6 +86,8 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
+          currentVersion=$(xmlstarlet sel -t -v '//Version' DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient.csproj)
+          
 
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:$currentVersion
