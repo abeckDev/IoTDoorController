@@ -86,7 +86,7 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
-          currentVersion=$(xmlstarlet sel -t -v '//Version' DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient.csproj)
+          currentVersion=$(xmlstarlet sel -t -v '//Version' AbeckDev.DoorController.DeviceClient.csproj)
           
 
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
