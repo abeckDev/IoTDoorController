@@ -32,7 +32,7 @@ jobs:
       - name: Determine current Version
         run: |
           currentVersion=$(xmlstarlet sel -t -v '//Version' DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient.csproj)
-          echo "Current Version: $currentVersion
+          echo "Current Version: $currentVersion"
 
       - name: Run tests
         working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient
@@ -63,7 +63,7 @@ jobs:
       - name: Determine current Version
         run: |
           currentVersion=$(xmlstarlet sel -t -v '//Version' DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient.csproj)
-          echo "Current Version: $currentVersion
+          echo "Current Version: $currentVersion"
 
       - name: Build image
         working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient
