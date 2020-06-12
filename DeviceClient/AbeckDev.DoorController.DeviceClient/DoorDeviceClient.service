@@ -1,0 +1,13 @@
+[Unit]
+Description=Device Client for the IoT Door Controller Cloud Application
+Requires=network.target
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=screen -S deviceclientsession -dms deviceclient /root/dotnet/dotnet /opt/DoorClient/AbeckDev.DoorController.DeviceClient.dll
+ExecStop=screen -r deviceclientsession -X quit
+
+[Install]
+WantedBy=multi-user.target
