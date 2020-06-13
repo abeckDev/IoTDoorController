@@ -126,9 +126,7 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             while (true)
             {
                 //Do update stuff
-                Console.WriteLine("Time for an Update!");
-                Console.WriteLine($"I am still standing at {DeviceLocation}");
-
+                Console.WriteLine("[Device Update]");
                 //Build Door Action String
                 var doorActionString = "";
                 string registeredDoorsReport = "";
@@ -158,5 +156,17 @@ namespace AbeckDev.DoorController.DeviceClient.Service
 
             }
         }
+
+        //static async Task HandleSettingChanged(TwinCollection desiredProperties, object userContext)
+        //{
+        //    string setting = "OptimalTemperature";
+        //    if (desiredProperties.Contains(setting))
+        //    {
+        //        BuildAcknowledgement(desiredProperties, setting);
+        //        optimalTemperature = (int)desiredProperties[setting]["value"];
+        //        greenMessage($"Optimal temperature updated: {optimalTemperature}");
+        //    }
+        //    await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+        //}
     }
 }
