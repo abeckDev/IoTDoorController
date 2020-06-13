@@ -20,8 +20,7 @@ namespace AbeckDev.DoorController.DeviceClient
     {
         static Status DeviceStatus = Status.ready;
         static Microsoft.Azure.Devices.Client.DeviceClient deviceClient;
-        //900000
-        static int intervalInMilliseconds = 10000;
+        static int intervalInMilliseconds = 900000;
         static int coolDownintervallMilliseconds = 5000;
         static List<DoorRegistration> doorRegistrations;
         static string IotCentralGlobalDeviceEndpoint;
