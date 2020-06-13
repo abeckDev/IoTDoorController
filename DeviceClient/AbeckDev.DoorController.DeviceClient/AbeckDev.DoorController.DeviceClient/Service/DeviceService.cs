@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Devices.Provisioning.Client;
+using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using static AbeckDev.DoorController.DeviceClient.Service.ConsoleHelperService;
 using Microsoft.Azure.Devices.Shared;
@@ -10,6 +10,7 @@ using System.Text.Json;
 using AbeckDev.DoorController.DeviceClient.Model;
 using Microsoft.Azure.Devices.Client;
 using System.Threading;
+using System.Reflection;
 
 namespace AbeckDev.DoorController.DeviceClient.Service
 {
@@ -24,8 +25,9 @@ namespace AbeckDev.DoorController.DeviceClient.Service
         string IotCentralDeviceId;
         string IotCentralPrimaryKey;
         string DeviceLocation;
+        int coolDownintervallMilliseconds;
 
-        public DeviceService(Status DeviceStatus, Microsoft.Azure.Devices.Client.DeviceClient deviceClient, int intervallInMiliseconds, List<DoorRegistration> doorRegistrations, string IotCentralGlobalDeviceEndpoint, string IotCentralScopeId, string IotCentralDeviceId, string IotCentralPrimaryKey, string DeviceLocation)
+        public DeviceService(Status DeviceStatus, Microsoft.Azure.Devices.Client.DeviceClient deviceClient, int intervallInMiliseconds, List<DoorRegistration> doorRegistrations, string IotCentralGlobalDeviceEndpoint, string IotCentralScopeId, string IotCentralDeviceId, string IotCentralPrimaryKey, string DeviceLocation, int coolDownintervallMilliseconds)
         {
             this.DeviceStatus = DeviceStatus;
             this.deviceClient = deviceClient;
@@ -36,7 +38,7 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             this.IotCentralDeviceId = IotCentralDeviceId;
             this.IotCentralPrimaryKey = IotCentralPrimaryKey;
             this.DeviceLocation = DeviceLocation;
-
+            this.coolDownintervallMilliseconds = coolDownintervallMilliseconds;
         }
 
 
@@ -46,9 +48,13 @@ namespace AbeckDev.DoorController.DeviceClient.Service
         /// <returns></returns>
         public async Task SendDevicePropertiesAsync()
         {
+            DeviceStatus = Status.ready;
             TwinCollection reportedProperties = new TwinCollection();
-
             reportedProperties["Location"] = DeviceLocation;
+            reportedProperties["cooldownIntervalInMiliSec"] = coolDownintervallMilliseconds;
+            reportedProperties["updateIntervalInMiliSec"] = intervalInMilliseconds;
+            reportedProperties["Version"] = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            reportedProperties["DeviceStatus"] = DeviceStatus.ToString();
             await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
             greenMessage($"Sent device properties: {JsonSerializer.Serialize(reportedProperties)}");
         }
@@ -62,15 +68,25 @@ namespace AbeckDev.DoorController.DeviceClient.Service
         {
             redMessage("Something went wrong. Will report error immediatly!");
             DeviceStatus = Status.error;
+            
             //Send Telemetry
             var telemetryDataPoint = new
             {
-                DeviceStatus = DeviceStatus.ToString(),
+                ReportedDeviceStatus = DeviceStatus.ToString(),
                 EventMessage = message,
             };
             var telemetryMessageString = JsonSerializer.Serialize(telemetryDataPoint);
             var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
             await deviceClient.SendEventAsync(telemetryMessage);
+
+            //Update Properties
+            TwinCollection reportedProperties = new TwinCollection();
+            reportedProperties["Location"] = DeviceLocation;
+            reportedProperties["cooldownIntervalInMiliSec"] = coolDownintervallMilliseconds;
+            reportedProperties["updateIntervalInMiliSec"] = intervalInMilliseconds;
+            reportedProperties["Version"] = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            reportedProperties["DeviceStatus"] = DeviceStatus.ToString();
+            await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         /// <summary>
@@ -84,12 +100,21 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             //Send Telemetry
             var telemetryDataPoint = new
             {
-                DeviceStatus = DeviceStatus.ToString(),
+                ReportedDeviceStatus = DeviceStatus.ToString(),
                 EventMessage = message,
             };
             var telemetryMessageString = JsonSerializer.Serialize(telemetryDataPoint);
             var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
             await deviceClient.SendEventAsync(telemetryMessage);
+
+            //Update Properties
+            TwinCollection reportedProperties = new TwinCollection();
+            reportedProperties["Location"] = DeviceLocation;
+            reportedProperties["cooldownIntervalInMiliSec"] = coolDownintervallMilliseconds;
+            reportedProperties["updateIntervalInMiliSec"] = intervalInMilliseconds;
+            reportedProperties["Version"] = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            reportedProperties["DeviceStatus"] = DeviceStatus.ToString();
+            await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         /// <summary>
@@ -101,9 +126,7 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             while (true)
             {
                 //Do update stuff
-                Console.WriteLine("Time for an Update!");
-                Console.WriteLine($"I am still standing at {DeviceLocation}");
-
+                Console.WriteLine("[Device Update]");
                 //Build Door Action String
                 var doorActionString = "";
                 string registeredDoorsReport = "";
@@ -117,19 +140,33 @@ namespace AbeckDev.DoorController.DeviceClient.Service
                 //Send Telemetry
                 var telemetryDataPoint = new
                 {
-                    DeviceStatus = DeviceStatus.ToString(),
+                    ReportedDeviceStatus = DeviceStatus.ToString(),
                     DoorActions = doorActionString,
                     RegisteredDoors = registeredDoorsReport,
                 };
                 var telemetryMessageString = JsonSerializer.Serialize(telemetryDataPoint);
                 var telemetryMessage = new Message(Encoding.ASCII.GetBytes(telemetryMessageString));
                 await deviceClient.SendEventAsync(telemetryMessage);
+                //Send Properties 
+                await SendDevicePropertiesAsync();
                 greenMessage($"Telemetry sent {DateTime.Now.ToShortTimeString()}");
 
-                //Wait a minute for next run
+                //Wait for next run
                 await Task.Delay(intervalInMilliseconds);
 
             }
         }
+
+        //static async Task HandleSettingChanged(TwinCollection desiredProperties, object userContext)
+        //{
+        //    string setting = "OptimalTemperature";
+        //    if (desiredProperties.Contains(setting))
+        //    {
+        //        BuildAcknowledgement(desiredProperties, setting);
+        //        optimalTemperature = (int)desiredProperties[setting]["value"];
+        //        greenMessage($"Optimal temperature updated: {optimalTemperature}");
+        //    }
+        //    await s_deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+        //}
     }
 }

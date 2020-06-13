@@ -1,4 +1,4 @@
-﻿using AbeckDev.DoorController.DeviceClient.Model;
+using AbeckDev.DoorController.DeviceClient.Model;
 using AbeckDev.DoorController.DeviceClient.Service;
 using static AbeckDev.DoorController.DeviceClient.Service.ConsoleHelperService;
 using Microsoft.Azure.Devices.Client;
@@ -69,7 +69,7 @@ namespace AbeckDev.DoorController.DeviceClient
                 greenMessage("Device successfully connected to Azure IoT Central!");
 
                 //Initializing Device Service
-                deviceService = new DeviceService(DeviceStatus, deviceClient, intervalInMilliseconds, doorRegistrations, IotCentralGlobalDeviceEndpoint, IotCentralScopeId, IotCentralDeviceId, IotCentralPrimaryKey, DeviceLocation);
+                deviceService = new DeviceService(DeviceStatus, deviceClient, intervalInMilliseconds, doorRegistrations, IotCentralGlobalDeviceEndpoint, IotCentralScopeId, IotCentralDeviceId, IotCentralPrimaryKey, DeviceLocation, coolDownintervallMilliseconds);
 
                 //Send Device Properties
                 deviceService.SendDevicePropertiesAsync().GetAwaiter().GetResult();
