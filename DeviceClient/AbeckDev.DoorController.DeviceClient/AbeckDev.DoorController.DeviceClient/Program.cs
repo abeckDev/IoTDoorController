@@ -32,6 +32,9 @@ namespace AbeckDev.DoorController.DeviceClient
 
         static void Main(string[] args)
         {
+#if DEBUG
+            intervalInMilliseconds = 300000;
+#endif
             //Get Version from Properties
             string version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             Console.WriteLine($"Starting DoorController Device Client: {version}");
