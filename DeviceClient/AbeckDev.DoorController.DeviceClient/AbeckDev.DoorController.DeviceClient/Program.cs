@@ -30,7 +30,7 @@ namespace AbeckDev.DoorController.DeviceClient
         static string DeviceLocation;
         static DeviceService deviceService;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
 #if DEBUG
             intervalInMilliseconds = 300000;
@@ -83,11 +83,11 @@ namespace AbeckDev.DoorController.DeviceClient
 
                 //Start Telemetry Send Loop
                 CancellationTokenSource cts = new CancellationTokenSource();
-                deviceService.SendDeviceTelemetryAsync(cts.Token);
+                await deviceService.SendDeviceTelemetryAsync(cts.Token);
 
-                //Cancellation Event
-                Console.ReadLine();
-                cts.Cancel();
+                ////Cancellation Event
+                //Console.ReadLine();
+                //cts.Cancel();
             }
             catch (Exception ex)
             {
