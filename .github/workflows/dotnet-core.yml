@@ -5,12 +5,12 @@ on:
     branches: [ master ]
     # Only trigger if changes to Device Client has been made
     paths: 
-      - DeviceClient/AbeckDev.DoorController.DeviceClient/
+      - DeviceClient/AbeckDev.DoorController.DeviceClient/*
   pull_request:
     branches: [ master ]
     # Only trigger if changes to Device Client has been made
     paths: 
-      - DeviceClient/AbeckDev.DoorController.DeviceClient/
+      - DeviceClient/AbeckDev.DoorController.DeviceClient/*
 jobs:
   build:
 
