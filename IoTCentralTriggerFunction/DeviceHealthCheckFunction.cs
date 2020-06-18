@@ -28,19 +28,6 @@ namespace IoTCentralTriggerFunctions
 
                 return new BadRequestObjectResult("Bad Request");
             }
-            string door;
-            // parse query parameter
-            try
-            {
-                door = req.GetQueryParameterDictionary()["door"];
-            }
-            catch (Exception)
-            {
-                return new BadRequestObjectResult("Bad Request");
-            }
-
-
-            log.LogInformation("Received request to check door " + door);
 
             using (var client = new HttpClient())
             {
