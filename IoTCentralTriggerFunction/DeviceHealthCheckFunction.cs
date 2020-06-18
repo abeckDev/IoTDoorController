@@ -51,11 +51,14 @@ namespace IoTCentralTriggerFunctions
                     var debug = await client.PutAsync(ApiUrl, body);
                     return new OkObjectResult("Offline");
                 }
-                //Set Device to online in IoT Central
-                ApiUrl = $"https://{IoTAppName}.azureiotcentral.com/api/preview/devices/{IoTDeviceName}/cloudProperties?access_token={IoTCoreAccessToken}";
-                var data = new StringContent("{\"DeviceStatus\": \"ready\"}", Encoding.UTF8, "application/json");
-                await client.PutAsync(ApiUrl, data);
-                return new OkObjectResult("Ok");
+                else
+                {
+                    //Set Device to online in IoT Central
+                    ApiUrl = $"https://{IoTAppName}.azureiotcentral.com/api/preview/devices/{IoTDeviceName}/cloudProperties?access_token={IoTCoreAccessToken}";
+                    var data = new StringContent("{\"DeviceStatus\": \"ready\"}", Encoding.UTF8, "application/json");
+                    await client.PutAsync(ApiUrl, data);
+                    return new OkObjectResult("Ok");
+                }
             }
         }
     }
