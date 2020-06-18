@@ -22,26 +22,6 @@ namespace IoTCentralTriggerFunctions
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            if (req.Method != HttpMethod.Get.ToString())
-            {
-                //Send an Error if wrong HTTP method is used
-
-                return new BadRequestObjectResult("Bad Request");
-            }
-            string door;
-            // parse query parameter
-            try
-            {
-                door = req.GetQueryParameterDictionary()["door"];
-            }
-            catch (Exception)
-            {
-                return new BadRequestObjectResult("Bad Request");
-            }
-
-
-            log.LogInformation("Received request to check door " + door);
-
             using (var client = new HttpClient())
             {
                 string IoTAppName = Environment.GetEnvironmentVariable("IoTAppName");
