@@ -55,14 +55,14 @@ namespace IoTCentralTriggerFunctions
                 string IoTComponentName = Environment.GetEnvironmentVariable("IoTComponentName");
                 string CommandName = Environment.GetEnvironmentVariable("CommandName");
 
-                
+
                 string IoTCoreAccessToken = Uri.EscapeDataString(Environment.GetEnvironmentVariable("IoTCentralToken"));
 
 
                 string ApiUrl = $"https://{IoTAppName}.azureiotcentral.com/api/preview/devices/{IoTDeviceName}/components/{IoTComponentName}/commands/{CommandName}?access_token={IoTCoreAccessToken}";
 
                 var data = new StringContent("{\"request\": " + door + "}", Encoding.UTF8, "application/json");
-                var response = client.PostAsync(ApiUrl, data).GetAwaiter().GetResult();
+                var response = await client.PostAsync(ApiUrl, data);
 
                 var debug = response;
             }
