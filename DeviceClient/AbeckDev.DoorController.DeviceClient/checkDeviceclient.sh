@@ -10,3 +10,5 @@ then
   systemctl restart deviceclient
 fi
 
+exit 0
+
