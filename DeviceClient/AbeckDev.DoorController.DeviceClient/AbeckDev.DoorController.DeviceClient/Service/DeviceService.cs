@@ -121,7 +121,7 @@ namespace AbeckDev.DoorController.DeviceClient.Service
         /// The loop which will keep sending telemtry messages every <see cref="intervalInMilliseconds"/> to Azure IoT Central
         /// </summary>
         /// <param name="token"></param>
-        public async void SendDeviceTelemetryAsync(CancellationToken token)
+        public async Task SendDeviceTelemetryAsync(CancellationToken token)
         {
             while (true)
             {
