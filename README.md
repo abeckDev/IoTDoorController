@@ -9,7 +9,7 @@ ToDo: Add a Intoduction to project and explaint setup process.
 
 * [Device Client](DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/)
   * The Software running on the Edge device which will send the 433 MHz signals to your doors.
-* [IoT Central Trigger Function](IoTCentralTriggerFunction/IoTCentralTriggerFunctions/IoTCentralTriggerFunctions/IoTCentralTriggerFunctions/)
+* [IoT Central Trigger Function](IoTCentralTriggerFunction/)
   * The Function used to receive signals from the end devices and forwarding them securely to Azure IoT Central
 
 
