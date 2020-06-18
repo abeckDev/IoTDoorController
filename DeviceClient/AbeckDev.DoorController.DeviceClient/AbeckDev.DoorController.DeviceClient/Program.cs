@@ -84,10 +84,6 @@ namespace AbeckDev.DoorController.DeviceClient
                 //Start Telemetry Send Loop
                 CancellationTokenSource cts = new CancellationTokenSource();
                 await deviceService.SendDeviceTelemetryAsync(cts.Token);
-
-                ////Cancellation Event
-                //Console.ReadLine();
-                //cts.Cancel();
             }
             catch (Exception ex)
             {
