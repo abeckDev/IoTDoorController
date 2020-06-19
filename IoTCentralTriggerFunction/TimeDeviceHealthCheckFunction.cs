@@ -40,6 +40,8 @@ namespace IoTCentralTriggerFunctions
                 JObject responseJson = JObject.Parse(content);
                 DateTime lastHealthcheck = responseJson["$metadata"]["DeviceStatus"]["ackLastUpdatedTimestamp"].ToObject<DateTime>();
                 TimeSpan lastUpdateDiff = DateTime.Now.Subtract(lastHealthcheck);
+                log.LogInformation($"last healthcheck: {lastHealthcheck.ToString()} and current time: {DateTime.Now}");
+                log.LogInformation($"Calculated diff: {lastUpdateDiff.ToString()} equals: Days={lastUpdateDiff.Days}, Hours={lastUpdateDiff.Hours}, Minutes={lastUpdateDiff.Minutes}");
                 if (lastUpdateDiff.Days >= 1 || lastUpdateDiff.Minutes > IoTDeviceTimeoutInMinutes)
                 {
                     //Device is Timed out
