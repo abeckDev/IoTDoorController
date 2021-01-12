@@ -25,6 +25,7 @@ on:
 env:
   # TODO: Change variable to your image's name.
   IMAGE_NAME: iotdoordeviceclient
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
 jobs:
   # Run tests.
