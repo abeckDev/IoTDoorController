@@ -9,6 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/abeckDev/IoTDoorController</PackageProjectUrl>
     <RepositoryUrl>https://github.com/abeckDev/IoTDoorController</RepositoryUrl>
+    <PackageReleaseNotes>Upgraded to .NET 5</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
