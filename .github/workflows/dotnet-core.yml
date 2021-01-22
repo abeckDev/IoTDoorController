@@ -1,4 +1,4 @@
-name: Device Client - .NET Core Build
+name: Device Client - .NET Build
 
 on:
   push:
@@ -22,10 +22,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core
+    - name: Setup .NET 
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101
+        dotnet-version: 5.0.102
     - name: Debug pwd
       run: pwd
     - name: Directory Content
