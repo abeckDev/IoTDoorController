@@ -10,7 +10,7 @@ echo "Updating from Package $1"
 echo "Removing existing Version in $runtimePath"
 rm -rf /opt/DoorClient/*
 
-echo "Extracting Applicatio"
+echo "Extracting Application"
 unzip $1
 mv -f publish/* $runtimePath/
 rm /opt/DoorClient/appsettings.json
