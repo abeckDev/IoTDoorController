@@ -1,20 +1,13 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Net.Http;
-using System.Net;
-using System.Web;
-using System.Web.Http;
 using System.Text;
-using System.Text.Encodings.Web;
 using Azure.Identity;
-
 
 namespace IoTCentralTriggerFunctions
 {
@@ -26,7 +19,6 @@ namespace IoTCentralTriggerFunctions
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
-
 
             //Check if GET is used
             if (req.Method != HttpMethod.Get.ToString())
@@ -48,7 +40,6 @@ namespace IoTCentralTriggerFunctions
             }
 
             log.LogInformation("Received request to control door " + door);
-            //log.LogInformation("IoT Core Token = " + token);
 
             //Get a AzureAD Token from Azure Default Credentials to be used for IoT Central API Call
             var credential = new DefaultAzureCredential();
@@ -72,16 +63,9 @@ namespace IoTCentralTriggerFunctions
                 request.Content = new StringContent("{\"request\": " + door + "}", Encoding.UTF8, "application/json");
                 //Send the request
                 var response = await client.SendAsync(request);
-
-                //Debug only
-                var debug = response;
-                //log.LogInformation("Status: " + debug.StatusCode.ToString());
-                //log.LogInformation("Body: " + debug.Content.ReadAsStringAsync().Result);
             }
             string responseMessage = "I sent the command to door: " + door;
-
             return new OkObjectResult(responseMessage);
-
         }
     }
 }
