@@ -157,7 +157,7 @@ namespace AbeckDev.DoorController.DeviceClient
                     //Use Decimal Mode
                     Console.WriteLine($"Opening door {door.Name} using Decimalcode ");
                     //Send Decimalcode
-                    var result = $"/opt/dotnet433helper/senddecimalcode.sh {door.Decimalcode}".Bash();
+                    var result = $"/opt/doorControllerHelper/senddecimalcode.sh {door.Decimalcode}".Bash();
                     Console.WriteLine(result);
                     //Release the door after 5 seconds
                     System.Threading.Thread.Sleep(coolDownintervallMilliseconds);
