@@ -353,3 +353,4 @@ MigrationBackup/
 # launchSettings
 launchSettings.json
 DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/Properties/launchSettings.json
+*.DS_Store
