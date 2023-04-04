@@ -62,24 +62,21 @@ namespace IoTCentralTriggerFunctions
                 string IoTComponentName = Environment.GetEnvironmentVariable("IoTComponentName");
                 string CommandName = Environment.GetEnvironmentVariable("CommandName");
 
-                //Obsolete content
-                //string IoTCoreAccessToken = Uri.EscapeDataString(Environment.GetEnvironmentVariable("IoTCentralToken"));
-                //string ApiUrl = $"https://.azureiotcentral.com/api/preview/devices/{IoTDeviceName}/components/{IoTComponentName}/commands/{CommandName}?access_token={IoTCoreAccessToken}";
-
                 //Build the API Call Url
                 var request = new HttpRequestMessage()
                 {
-                    RequestUri = new Uri($"https://{IoTAppName}.azureiotcentral.com/api/devices/{IoTDeviceName}/components/{IoTComponentName}/commands/{CommandName}?api-version=2022-07-31"),
+                    RequestUri = new Uri($"https://{IoTAppName}.azureiotcentral.com/api/devices/{IoTDeviceName}/commands/{CommandName}?api-version=2022-07-31"),
                     Method = HttpMethod.Post,
                 };
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
                 request.Content = new StringContent("{\"request\": " + door + "}", Encoding.UTF8, "application/json");
-
                 //Send the request
                 var response = await client.SendAsync(request);
 
                 //Debug only
                 var debug = response;
+                //log.LogInformation("Status: " + debug.StatusCode.ToString());
+                //log.LogInformation("Body: " + debug.Content.ReadAsStringAsync().Result);
             }
             string responseMessage = "I sent the command to door: " + door;
 
