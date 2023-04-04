@@ -13,6 +13,8 @@ using System.Web;
 using System.Web.Http;
 using System.Text;
 using System.Text.Encodings.Web;
+using Azure.Identity;
+
 
 namespace IoTCentralTriggerFunctions
 {
@@ -26,12 +28,14 @@ namespace IoTCentralTriggerFunctions
             log.LogInformation("C# HTTP trigger function processed a request.");
 
 
+            //Check if GET is used
             if (req.Method != HttpMethod.Get.ToString())
             {
                 //Send an Error if wrong HTTP method is used
-
                 return new BadRequestObjectResult("Bad Request");
             }
+
+            //Define the variable which will be used to store the query parameter of the door being addressed
             string door;
             // parse query parameter
             try
@@ -43,11 +47,14 @@ namespace IoTCentralTriggerFunctions
                 return new BadRequestObjectResult("Bad Request");
             }
 
-
-            log.LogInformation("Received request to controll door " + door);
+            log.LogInformation("Received request to control door " + door);
             //log.LogInformation("IoT Core Token = " + token);
 
+            //Get a AzureAD Token from Azure Default Credentials to be used for IoT Central API Call
+            var credential = new DefaultAzureCredential();
+            var token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://apps.azureiotcentral.com/.default" }));
 
+            //Send IoT Central API Call to open/close door
             using (var client = new HttpClient())
             {
                 string IoTAppName = Environment.GetEnvironmentVariable("IoTAppName");
@@ -55,19 +62,27 @@ namespace IoTCentralTriggerFunctions
                 string IoTComponentName = Environment.GetEnvironmentVariable("IoTComponentName");
                 string CommandName = Environment.GetEnvironmentVariable("CommandName");
 
+                //Obsolete content
+                //string IoTCoreAccessToken = Uri.EscapeDataString(Environment.GetEnvironmentVariable("IoTCentralToken"));
+                //string ApiUrl = $"https://.azureiotcentral.com/api/preview/devices/{IoTDeviceName}/components/{IoTComponentName}/commands/{CommandName}?access_token={IoTCoreAccessToken}";
 
-                string IoTCoreAccessToken = Uri.EscapeDataString(Environment.GetEnvironmentVariable("IoTCentralToken"));
+                //Build the API Call Url
+                var request = new HttpRequestMessage()
+                {
+                    RequestUri = new Uri($"https://{IoTAppName}.azureiotcentral.com/api/devices/{IoTDeviceName}/components/{IoTComponentName}/commands/{CommandName}?api-version=2022-07-31"),
+                    Method = HttpMethod.Post,
+                };
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Token);
+                request.Content = new StringContent("{\"request\": " + door + "}", Encoding.UTF8, "application/json");
 
+                //Send the request
+                var response = await client.SendAsync(request);
 
-                string ApiUrl = $"https://{IoTAppName}.azureiotcentral.com/api/preview/devices/{IoTDeviceName}/components/{IoTComponentName}/commands/{CommandName}?access_token={IoTCoreAccessToken}";
-
-                var data = new StringContent("{\"request\": " + door + "}", Encoding.UTF8, "application/json");
-                var response = await client.PostAsync(ApiUrl, data);
-
+                //Debug only
                 var debug = response;
             }
-
             string responseMessage = "I sent the command to door: " + door;
+
             return new OkObjectResult(responseMessage);
 
         }
