@@ -17,33 +17,36 @@ ToDo: Add a Intoduction to project and explaint setup process.
 
 * Microsoft Azure - As main Cloud Environment
   * Azure Functions - Main Entrypoint for REST Clients and Connector to Azure IoT Central
-  * Azure Key Vault - Secret Management for Cloud Environment
+    * Azure managed Identities - To connect Azure Functions and Azure IoT Central
   * Azure IoT Central - IoT AllIn One suite for Communication with the IoT End Devices
 * RaspberryPi - As Test Hardware
-  * .NET Core 3.1 as Client App Framework
+  * .NET 6 as the current LTS version as Client App Framework
   
-**Documentation in Detail will (hopefully) follow soon!**
 
 
 ### Prerequisites
 
-ToDo: Add what things you need to install the software and how to install them
+You need the following prerequisites to operate the doorcontroller:
+* A Raspberry Pi system which can run the latest Version of [Raspberry Pi OS 11](https://www.raspberrypi.com/software/operating-systems/)
+* An Azure Subscription to host the Azure Functions in an Azure Function App
+
 
 ### Installing
 
+#### Azure Functions 
 
-## Running the tests
+The Azure Function can be deployed with the Azure Function CLI. The Setup of a managed Identity with access to the Azure IoT Central app is also neccesary. 
 
+#### Device Client
 
-## Deployment
-
-ToDo: Add deployment details
+An installer is available to setup the device client, the Linux service and the cronjob. You can execute the installer with the following command in the Raspbian OS system as ```root```:
+```curl https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceClient/AbeckDev.DoorController.DeviceClient/setupDoorController.sh | bash -```
 
 ## Built With
 
 * [Azure Functions](https://azure.microsoft.com/en-us/services/functions/) - Serverless Framework which receive signals from the end devices and forwarding them securely to Azure IoT Central
 * [Azure IoT Central](https://azure.microsoft.com/en-us/services/iot-central/) - Central IoT App Plattform
-* [.NET Core](https://dotnet.microsoft.com/learn/dotnet/what-is-dotnet) - The Framework used to build the Device Client software
+* [.NET 6](https://dotnet.microsoft.com/learn/dotnet/what-is-dotnet) - The Framework used to build the Device Client software
 
 ## Contributing
 
