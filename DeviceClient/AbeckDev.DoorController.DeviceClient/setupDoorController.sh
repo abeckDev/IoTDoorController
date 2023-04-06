@@ -13,7 +13,7 @@ apt-get update
 apt-get upgrade -y
 
 # Install git
-echo "Installing Git..."
+echo "Installing needed tools..."
 apt-get install git vim screen -y
 
 # Install .NET6 runtime
