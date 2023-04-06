@@ -7,7 +7,7 @@ isStillRunning=$?
 
 if [ $isStillRunning != 0 ]
 then
-  systemctl restart deviceclient
+  systemctl restart DoorDeviceClient
 fi
 
 exit 0
