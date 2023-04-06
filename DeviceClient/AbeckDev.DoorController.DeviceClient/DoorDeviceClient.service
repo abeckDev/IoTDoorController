@@ -6,7 +6,7 @@ After=network.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=screen -S deviceclientsession -dms deviceclient /root/dotnet/dotnet /opt/DoorClient/AbeckDev.DoorController.DeviceClient.dll
+ExecStart=screen -S deviceclientsession -dms deviceclient /root/.dotnet/dotnet /opt/DoorClient/AbeckDev.DoorController.DeviceClient.dll
 ExecStop=screen -r deviceclientsession -X quit
 
 [Install]
