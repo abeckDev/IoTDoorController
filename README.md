@@ -42,6 +42,14 @@ The Azure Function can be deployed with the Azure Function CLI. The Setup of a m
 An installer is available to setup the device client, the Linux service and the cronjob. You can execute the installer with the following command in the Raspbian OS system as ```root```:
 ```curl https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceClient/AbeckDev.DoorController.DeviceClient/setupDoorController.sh | bash -```
 
+### Updateting 
+
+#### Device Client
+
+The Device Client can be updated with a specific updater file. The usage is similiar to the installation process. The script also need to be run as ```root```:
+```curl https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceClient/AbeckDev.DoorController.DeviceClient/updateDoorClient.sh | bash -```
+
+
 ## Built With
 
 * [Azure Functions](https://azure.microsoft.com/en-us/services/functions/) - Serverless Framework which receive signals from the end devices and forwarding them securely to Azure IoT Central
