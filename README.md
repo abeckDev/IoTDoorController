@@ -20,7 +20,7 @@ ToDo: Add a Intoduction to project and explaint setup process.
     * Azure managed Identities - To connect Azure Functions and Azure IoT Central
   * Azure IoT Central - IoT AllIn One suite for Communication with the IoT End Devices
 * RaspberryPi - As Test Hardware
-  * .NET 6 as the current LTS version as Client App Framework
+  * .NET 8 as the current LTS version as Client App Framework
   
 
 
