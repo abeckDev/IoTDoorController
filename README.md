@@ -82,7 +82,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 * Thanks to the Microsoft Learn Plattform Module [Create your first iot central app](https://docs.microsoft.com/en-us/learn/modules/create-your-first-iot-central-app/) for a great introduction to IoT Central and a sample Application code. 
-
-
-  
-  
