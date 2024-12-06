@@ -59,7 +59,7 @@ curl https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceC
 
 * [Azure Functions](https://azure.microsoft.com/en-us/services/functions/) - Serverless Framework which receive signals from the end devices and forwarding them securely to Azure IoT Central
 * [Azure IoT Central](https://azure.microsoft.com/en-us/services/iot-central/) - Central IoT App Plattform
-* [.NET 6](https://dotnet.microsoft.com/learn/dotnet/what-is-dotnet) - The Framework used to build the Device Client software
+* [.NET 8](https://dotnet.microsoft.com/learn/dotnet/what-is-dotnet) - The Framework used to build the Device Client software
 
 ## Contributing
 
