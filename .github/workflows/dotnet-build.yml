@@ -3,14 +3,14 @@ name: Device Client - .NET Build
 on:
   push:
     branches: 
-      - master
+      - main
       - 'version/**' 
     # Only trigger if changes to Device Client has been made
     paths: 
       - 'DeviceClient/AbeckDev.DoorController.DeviceClient/**'
   pull_request:
     branches: 
-      - master
+      - main
       - 'version/**' 
     # Only trigger if changes to Device Client has been made
     paths: 
