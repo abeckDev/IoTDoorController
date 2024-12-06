@@ -23,7 +23,6 @@ ToDo: Add a Intoduction to project and explaint setup process.
   * .NET 8 as the current LTS version as Client App Framework
   
 
-
 ### Prerequisites
 
 You need the following prerequisites to operate the doorcontroller:
