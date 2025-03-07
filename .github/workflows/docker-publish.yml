@@ -4,7 +4,7 @@ on:
   push:
     # Publish `master` as Docker `latest` image.
      branches: 
-      - master
+      - main
     # Only trigger if changes to Device Client has been made
      paths: 
       - 'DeviceClient/AbeckDev.DoorController.DeviceClient/**'
@@ -16,7 +16,7 @@ on:
   # Run tests for any PRs.
   pull_request:
     branches: 
-      - master
+      - main
       - 'version/**'
     # Only trigger if changes to Device Client has been made
     paths: 
