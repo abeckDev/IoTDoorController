@@ -3,14 +3,14 @@ name: Device Client - .NET Build
 on:
   push:
     branches: 
-      - master
+      - main
       - 'version/**' 
     # Only trigger if changes to Device Client has been made
     paths: 
       - 'DeviceClient/AbeckDev.DoorController.DeviceClient/**'
   pull_request:
     branches: 
-      - master
+      - main
       - 'version/**' 
     # Only trigger if changes to Device Client has been made
     paths: 
@@ -25,7 +25,7 @@ jobs:
     - name: Setup .NET 
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.407
+        dotnet-version: 8.0.x
     - name: Debug pwd
       run: pwd
     - name: Directory Content
@@ -42,7 +42,7 @@ jobs:
     - name: Build Drop Archive
       run: zip /home/runner/work/IoTDoorController/drop.zip -r /home/runner/work/IoTDoorController/publish/*
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         # Artifact name
         name: DoorController-Release
