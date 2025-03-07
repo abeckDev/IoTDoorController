@@ -9,7 +9,7 @@
         "type": "coreclr",
         "request": "launch",
         "preLaunchTask": "build",
-        "program": "${workspaceFolder}/DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/bin/Debug/netcoreapp3.1/AbeckDev.DoorController.DeviceClient.dll",
+        "program": "${workspaceFolder}/DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/bin/Debug/net8.0/AbeckDev.DoorController.DeviceClient.dll",
         "args": [],
         "cwd": "${workspaceFolder}/DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient",
         "console": "internalConsole",

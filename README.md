@@ -20,9 +20,8 @@ ToDo: Add a Intoduction to project and explaint setup process.
     * Azure managed Identities - To connect Azure Functions and Azure IoT Central
   * Azure IoT Central - IoT AllIn One suite for Communication with the IoT End Devices
 * RaspberryPi - As Test Hardware
-  * .NET 6 as the current LTS version as Client App Framework
+  * .NET 8 as the current LTS version as Client App Framework
   
-
 
 ### Prerequisites
 
@@ -59,7 +58,7 @@ curl https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceC
 
 * [Azure Functions](https://azure.microsoft.com/en-us/services/functions/) - Serverless Framework which receive signals from the end devices and forwarding them securely to Azure IoT Central
 * [Azure IoT Central](https://azure.microsoft.com/en-us/services/iot-central/) - Central IoT App Plattform
-* [.NET 6](https://dotnet.microsoft.com/learn/dotnet/what-is-dotnet) - The Framework used to build the Device Client software
+* [.NET 8](https://dotnet.microsoft.com/learn/dotnet/what-is-dotnet) - The Framework used to build the Device Client software
 
 ## Contributing
 
@@ -82,7 +81,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 * Thanks to the Microsoft Learn Plattform Module [Create your first iot central app](https://docs.microsoft.com/en-us/learn/modules/create-your-first-iot-central-app/) for a great introduction to IoT Central and a sample Application code. 
-
-
-  
-  

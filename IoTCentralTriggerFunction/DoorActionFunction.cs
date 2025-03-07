@@ -45,6 +45,35 @@ namespace IoTCentralTriggerFunctions
             var credential = new DefaultAzureCredential();
             var token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://apps.azureiotcentral.com/.default" }));
 
+
+            //Check for notification settings 
+            string announcementTriggerUrl = Environment.GetEnvironmentVariable("Announcement_TriggerUrl");
+            string announcementToken = Environment.GetEnvironmentVariable("Announcement_Token");
+            string announcementFlowId = Environment.GetEnvironmentVariable("Announcement_FlowId");
+
+
+            if (!string.IsNullOrEmpty(announcementTriggerUrl) 
+                && !string.IsNullOrEmpty(announcementToken)
+                && !string.IsNullOrEmpty(announcementFlowId))
+            {
+                log.LogInformation("Announcement API settings found. Triggering announcement");
+
+                //Trigger announcement of Door Action via Voice Monkey
+                using (var httpClient = new HttpClient())
+                {
+                    var response = await httpClient.GetAsync($"{announcementTriggerUrl}?token={announcementToken}&flow={announcementFlowId}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseBody = await response.Content.ReadAsStringAsync();
+                        log.LogInformation("Announcement request successful. Response: " + responseBody);
+                    }
+                    else
+                    {
+                        log.LogWarning("Annoucement request failed. Status code: " + response.StatusCode);
+                    }
+                }
+            }
+
             //Send IoT Central API Call to open/close door
             using (var client = new HttpClient())
             {
