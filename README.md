@@ -62,7 +62,7 @@ curl https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceC
 
 ## Contributing
 
-Please read [Contributing](CONTRIBUTING.md) for the process for submitting pull requests to us and refer to [Code of Conduct](CODE_OF_CONDUCT.md) for details on our code of conduct. 
+Please read [Contributing](CONTRIBUTING.md) for the process for submitting pull requests. 
 
 ## Versioning
 
