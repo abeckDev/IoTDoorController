@@ -1,4 +1,4 @@
-name: Device Client - .NET Build
+name: Device Client - Build and Release
 
 on:
   push:
@@ -12,40 +12,72 @@ on:
     branches: 
       - main
       - 'version/**' 
-    # Only trigger if changes to Device Client has been made
+    # Trigger on changes to either Device Client or Azure Function
     paths: 
       - 'DeviceClient/AbeckDev.DoorController.DeviceClient/**'
+      - 'IoTCentralTriggerFunction/**'
 jobs:
   build:
-
+  
     runs-on: ubuntu-latest
-
+  
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET 
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 8.0.x
-    - name: Debug pwd
-      run: pwd
-    - name: Directory Content
-      run: ls
-    - name: Install dependencies
+    - name: Install XML Starlet
+      run: sudo apt-get update; sudo apt-get install xmlstarlet -y
+    - name: Extract Version
+      id: version
+      run: |
+        currentVersion=$(xmlstarlet sel -t -v '//Version' DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient.csproj)
+        echo "Current Version: $currentVersion"
+        echo "version=$currentVersion" >> $GITHUB_OUTPUT
+    - name: Install Device Client dependencies
+      working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/
+      run: dotnet restore AbeckDev.DoorController.DeviceClient.sln
+    - name: Build Device Client
+      working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/
+      run: dotnet build AbeckDev.DoorController.DeviceClient.sln --configuration Release --no-restore
+    - name: Publish Device Client
+      run: mkdir -p /home/runner/work/IoTDoorController/publish/DeviceClient; dotnet publish -c Release -o /home/runner/work/IoTDoorController/publish/DeviceClient
       working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
-      run: dotnet restore
-    - name: Build
-      working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
-      run: dotnet build --configuration Release --no-restore
-    - name: dotnet publish
-      run: mkdir -p /home/runner/work/IoTDoorController/publish; dotnet publish -c Release -o /home/runner/work/IoTDoorController/publish
-      working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
-    - name: Build Drop Archive
-      run: zip /home/runner/work/IoTDoorController/drop.zip -r /home/runner/work/IoTDoorController/publish/*
+    - name: Build Release Archive
+      run: |
+        cd /home/runner/work/IoTDoorController/publish
+        zip -r /home/runner/work/IoTDoorController/IoTDoorController-v${{ steps.version.outputs.version }}.zip *
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
       with:
         # Artifact name
-        name: DoorController-Release
+        name: IoTDoorController-Release-v${{ steps.version.outputs.version }}
         # A file, directory or wildcard pattern that describes what to upload
         path: /home/runner/work/IoTDoorController/publish/
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: IoT Door Controller v${{ steps.version.outputs.version }}
+        body: |
+          ## IoT Door Controller Release v${{ steps.version.outputs.version }}
+          
+          This release contains:
+          - Device Client application (.NET 8) for Raspberry Pi deployment
+          
+          ### Device Client
+          The Device Client connects to Azure IoT Central and controls 433MHz door systems.
+          
+          ### Deployment
+          - Extract the release archive
+          - Device Client: Use the files in `DeviceClient/` directory
+          
+          For detailed setup instructions, see the [README](https://github.com/abeckDev/IoTDoorController#readme).
+        files: /home/runner/work/IoTDoorController/IoTDoorController-v${{ steps.version.outputs.version }}.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
