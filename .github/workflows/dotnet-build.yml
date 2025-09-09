@@ -44,6 +44,8 @@ jobs:
     - name: Publish Device Client
       run: mkdir -p /home/runner/work/IoTDoorController/publish/DeviceClient; dotnet publish -c Release -o /home/runner/work/IoTDoorController/publish/DeviceClient
       working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
+    - name: Copy install scripts to release archive
+      run: cp DeviceClient/AbeckDev.DoorController.DeviceClient/*.sh DeviceClient/AbeckDev.DoorController.DeviceClient/*.service /home/runner/work/IoTDoorController/publish/
     - name: Build Release Archive
       run: |
         cd /home/runner/work/IoTDoorController/publish
