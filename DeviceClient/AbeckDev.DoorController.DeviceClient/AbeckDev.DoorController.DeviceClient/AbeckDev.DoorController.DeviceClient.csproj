@@ -9,7 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/abeckDev/IoTDoorController</PackageProjectUrl>
     <RepositoryUrl>https://github.com/abeckDev/IoTDoorController</RepositoryUrl>
-    <PackageReleaseNotes>Minor dependency updates.</PackageReleaseNotes>
+    <PackageReleaseNotes>Minor dependency updates. </PackageReleaseNotes>
   </PropertyGroup>
  
   <ItemGroup>
