@@ -1,14 +1,13 @@
-name: .NET Build and Release
+name: Device Client - Build and Release
 
 on:
   push:
     branches: 
       - main
       - 'version/**' 
-    # Trigger on changes to either Device Client or Azure Function
+    # Only trigger if changes to Device Client has been made
     paths: 
       - 'DeviceClient/AbeckDev.DoorController.DeviceClient/**'
-      - 'IoTCentralTriggerFunction/**'
   pull_request:
     branches: 
       - main
@@ -19,9 +18,9 @@ on:
       - 'IoTCentralTriggerFunction/**'
 jobs:
   build:
-
+  
     runs-on: ubuntu-latest
-
+  
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET 
@@ -36,28 +35,15 @@ jobs:
         currentVersion=$(xmlstarlet sel -t -v '//Version' DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient.csproj)
         echo "Current Version: $currentVersion"
         echo "version=$currentVersion" >> $GITHUB_OUTPUT
-    - name: Debug pwd
-      run: pwd
-    - name: Directory Content
-      run: ls
     - name: Install Device Client dependencies
       working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/
       run: dotnet restore AbeckDev.DoorController.DeviceClient.sln
     - name: Build Device Client
       working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/
       run: dotnet build AbeckDev.DoorController.DeviceClient.sln --configuration Release --no-restore
-    - name: Install Azure Function dependencies
-      working-directory: IoTCentralTriggerFunction/
-      run: dotnet restore IoTCentralTriggerFunctions.sln
-    - name: Build Azure Function
-      working-directory: IoTCentralTriggerFunction/
-      run: dotnet build IoTCentralTriggerFunctions.sln --configuration Release --no-restore
     - name: Publish Device Client
       run: mkdir -p /home/runner/work/IoTDoorController/publish/DeviceClient; dotnet publish -c Release -o /home/runner/work/IoTDoorController/publish/DeviceClient
       working-directory: DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient/
-    - name: Publish Azure Function
-      run: mkdir -p /home/runner/work/IoTDoorController/publish/AzureFunction; dotnet publish -c Release -o /home/runner/work/IoTDoorController/publish/AzureFunction
-      working-directory: IoTCentralTriggerFunction/
     - name: Build Release Archive
       run: |
         cd /home/runner/work/IoTDoorController/publish
@@ -80,18 +66,13 @@ jobs:
           
           This release contains:
           - Device Client application (.NET 8) for Raspberry Pi deployment
-          - Azure Function (.NET 6) for IoT Central integration
           
           ### Device Client
           The Device Client connects to Azure IoT Central and controls 433MHz door systems.
           
-          ### Azure Function
-          The Azure Function provides HTTP endpoints for door control operations through IoT Central.
-          
           ### Deployment
           - Extract the release archive
           - Device Client: Use the files in `DeviceClient/` directory
-          - Azure Function: Use the files in `AzureFunction/` directory
           
           For detailed setup instructions, see the [README](https://github.com/abeckDev/IoTDoorController#readme).
         files: /home/runner/work/IoTDoorController/IoTDoorController-v${{ steps.version.outputs.version }}.zip
