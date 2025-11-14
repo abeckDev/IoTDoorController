@@ -9,3 +9,7 @@ updates:
     directory: "/DeviceClient/AbeckDev.DoorController.DeviceClient/AbeckDev.DoorController.DeviceClient" # Location of package manifests
     schedule:
       interval: "weekly"
+    groups:
+      production-dependencies:
+        patterns:
+          - "*"
