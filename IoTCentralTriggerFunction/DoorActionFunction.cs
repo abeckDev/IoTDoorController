@@ -1,8 +1,6 @@
 using System.Net;
-using System.Text;
-using System.Text.Json;
-using Azure.Core;
 using Azure.Identity;
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -29,76 +27,49 @@ public class DoorActionFunction
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
     {
-        _logger.LogInformation("Door control request received");
+        _logger.LogInformation("Door control request received (V2 IoT Hub mode).");
 
         try
         {
-            // Validate and extract door parameter
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
             var door = query["door"];
 
             if (string.IsNullOrWhiteSpace(door))
             {
-                _logger.LogWarning("Missing or invalid 'door' parameter");
                 var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badResponse.WriteAsJsonAsync(new { error = "Missing required 'door' parameter" });
                 return badResponse;
             }
 
-            // Validate door parameter is numeric
             if (!int.TryParse(door, out var doorId))
             {
-                _logger.LogWarning("Invalid door parameter: {Door}", door);
                 var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await badResponse.WriteAsJsonAsync(new { error = "Door parameter must be numeric" });
                 return badResponse;
             }
 
-            _logger.LogInformation("Processing door control request for door: {DoorId}", doorId);
-
-            // Get required environment variables
             var config = GetConfiguration();
             if (!config.IsValid)
             {
-                _logger.LogError("Missing required configuration: {MissingVars}", 
-                    string.Join(", ", config.MissingVariables));
+                _logger.LogError("Missing required configuration: {MissingVars}", string.Join(", ", config.MissingVariables));
                 var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
                 await errorResponse.WriteAsJsonAsync(new { error = "Server configuration error" });
                 return errorResponse;
             }
 
-            // Get Azure AD token for IoT Central
-            AccessToken token;
-            try
-            {
-                token = await _credential.GetTokenAsync(
-                    new TokenRequestContext(new[] { "https://apps.azureiotcentral.com/.default" }),
-                    req.FunctionContext.CancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to acquire Azure AD token");
-                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-                await errorResponse.WriteAsJsonAsync(new { error = "Authentication failed" });
-                return errorResponse;
-            }
-
-            // Trigger announcement if configured
             if (config.AnnouncementConfigured)
             {
                 await TriggerAnnouncementAsync(config, req.FunctionContext.CancellationToken);
             }
 
-            // Send IoT Central command
-            var success = await SendIoTCentralCommandAsync(config, doorId, token.Token, req.FunctionContext.CancellationToken);
-            
+            var success = await SendIoTHubCommandAsync(config, doorId, req.FunctionContext.CancellationToken);
             var response = req.CreateResponse(success ? HttpStatusCode.OK : HttpStatusCode.InternalServerError);
-            await response.WriteAsJsonAsync(new 
-            { 
+            await response.WriteAsJsonAsync(new
+            {
                 message = $"Command sent to door: {doorId}",
-                success = success
+                success,
             });
-            
+
             return response;
         }
         catch (Exception ex)
@@ -114,13 +85,10 @@ public class DoorActionFunction
     {
         try
         {
-            _logger.LogInformation("Triggering announcement");
-            
             var httpClient = _httpClientFactory.CreateClient();
             var url = $"{config.AnnouncementTriggerUrl}?token={config.AnnouncementToken}&flow={config.AnnouncementFlowId}";
-            
             var response = await httpClient.GetAsync(url, cancellationToken);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -137,78 +105,77 @@ public class DoorActionFunction
         }
     }
 
-    private async Task<bool> SendIoTCentralCommandAsync(
-        Configuration config, 
-        int doorId, 
-        string accessToken,
-        CancellationToken cancellationToken)
+    private async Task<bool> SendIoTHubCommandAsync(Configuration config, int doorId, CancellationToken cancellationToken)
     {
+        ServiceClient? serviceClient = null;
         try
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            var url = $"https://{config.IoTAppName}.azureiotcentral.com/api/devices/{config.IoTDeviceName}/commands/{config.CommandName}?api-version=2022-07-31";
-            
-            var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-            
-            var payload = new { request = doorId };
-            request.Content = new StringContent(
-                JsonSerializer.Serialize(payload), 
-                Encoding.UTF8, 
-                "application/json");
+            serviceClient = string.IsNullOrWhiteSpace(config.IoTHubConnectionString)
+                ? ServiceClient.Create(config.IoTHubHostName!, _credential)
+                : ServiceClient.CreateFromConnectionString(config.IoTHubConnectionString);
 
-            _logger.LogInformation("Sending command to IoT Central device: {DeviceName}", config.IoTDeviceName);
-            
-            var response = await httpClient.SendAsync(request, cancellationToken);
-            
-            if (response.IsSuccessStatusCode)
+            var method = new CloudToDeviceMethod(config.DirectMethodName)
             {
-                _logger.LogInformation("IoT Central command sent successfully");
+                ResponseTimeout = TimeSpan.FromSeconds(30),
+                ConnectionTimeout = TimeSpan.FromSeconds(30),
+            };
+            method.SetPayloadJson(doorId.ToString());
+
+            _logger.LogInformation("Sending IoT Hub direct method {MethodName} to {DeviceId}", config.DirectMethodName, config.TargetDeviceId);
+            var response = await serviceClient.InvokeDeviceMethodAsync(config.TargetDeviceId, method, cancellationToken);
+
+            if (response.Status >= 200 && response.Status < 300)
+            {
+                _logger.LogInformation("IoT Hub direct method succeeded with status: {Status}", response.Status);
                 return true;
             }
-            else
-            {
-                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
-                _logger.LogError("IoT Central command failed with status {StatusCode}: {Error}", 
-                    response.StatusCode, errorBody);
-                return false;
-            }
+
+            _logger.LogError("IoT Hub direct method failed with status: {Status}, payload: {Payload}", response.Status, response.GetPayloadAsJson());
+            return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send IoT Central command");
+            _logger.LogError(ex, "Failed to send IoT Hub direct method");
             return false;
+        }
+        finally
+        {
+            if (serviceClient != null)
+            {
+                await serviceClient.CloseAsync();
+                serviceClient.Dispose();
+            }
         }
     }
 
-    private Configuration GetConfiguration()
+    private static Configuration GetConfiguration()
     {
-        var config = new Configuration
+        return new Configuration
         {
-            IoTAppName = Environment.GetEnvironmentVariable("IoTAppName"),
-            IoTDeviceName = Environment.GetEnvironmentVariable("IoTDeviceName"),
-            CommandName = Environment.GetEnvironmentVariable("CommandName"),
+            IoTHubHostName = Environment.GetEnvironmentVariable("IoTHubHostName"),
+            IoTHubConnectionString = Environment.GetEnvironmentVariable("IoTHubConnectionString"),
+            TargetDeviceId = Environment.GetEnvironmentVariable("TargetDeviceId"),
+            DirectMethodName = Environment.GetEnvironmentVariable("DirectMethodName") ?? "DoorCommand",
             AnnouncementTriggerUrl = Environment.GetEnvironmentVariable("Announcement_TriggerUrl"),
             AnnouncementToken = Environment.GetEnvironmentVariable("Announcement_Token"),
-            AnnouncementFlowId = Environment.GetEnvironmentVariable("Announcement_FlowId")
+            AnnouncementFlowId = Environment.GetEnvironmentVariable("Announcement_FlowId"),
         };
-
-        return config;
     }
 
     private class Configuration
     {
-        public string? IoTAppName { get; init; }
-        public string? IoTDeviceName { get; init; }
-        public string? CommandName { get; init; }
+        public string? IoTHubHostName { get; init; }
+        public string? IoTHubConnectionString { get; init; }
+        public string? TargetDeviceId { get; init; }
+        public string? DirectMethodName { get; init; }
         public string? AnnouncementTriggerUrl { get; init; }
         public string? AnnouncementToken { get; init; }
         public string? AnnouncementFlowId { get; init; }
 
-        public bool IsValid => 
-            !string.IsNullOrWhiteSpace(IoTAppName) &&
-            !string.IsNullOrWhiteSpace(IoTDeviceName) &&
-            !string.IsNullOrWhiteSpace(CommandName);
+        public bool IsValid =>
+            (!string.IsNullOrWhiteSpace(IoTHubHostName) || !string.IsNullOrWhiteSpace(IoTHubConnectionString)) &&
+            !string.IsNullOrWhiteSpace(TargetDeviceId) &&
+            !string.IsNullOrWhiteSpace(DirectMethodName);
 
         public bool AnnouncementConfigured =>
             !string.IsNullOrWhiteSpace(AnnouncementTriggerUrl) &&
@@ -219,9 +186,9 @@ public class DoorActionFunction
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(IoTAppName)) yield return "IoTAppName";
-                if (string.IsNullOrWhiteSpace(IoTDeviceName)) yield return "IoTDeviceName";
-                if (string.IsNullOrWhiteSpace(CommandName)) yield return "CommandName";
+                if (string.IsNullOrWhiteSpace(IoTHubHostName) && string.IsNullOrWhiteSpace(IoTHubConnectionString)) yield return "IoTHubHostName or IoTHubConnectionString";
+                if (string.IsNullOrWhiteSpace(TargetDeviceId)) yield return "TargetDeviceId";
+                if (string.IsNullOrWhiteSpace(DirectMethodName)) yield return "DirectMethodName";
             }
         }
     }

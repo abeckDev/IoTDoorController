@@ -38,10 +38,10 @@ echo "Installing helper scripts..."
 cd /opt/
 mkdir doorControllerHelper
 cd doorControllerHelper
-wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceClient/AbeckDev.DoorController.DeviceClient/senddecimalcode.sh
-wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceClient/AbeckDev.DoorController.DeviceClient/updateDoorClient.sh
-wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceClient/AbeckDev.DoorController.DeviceClient/DoorDeviceClient.service
-wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/master/DeviceClient/AbeckDev.DoorController.DeviceClient/checkDeviceclient.sh
+wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/main/DeviceClient/AbeckDev.DoorController.DeviceClient/senddecimalcode.sh
+wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/main/DeviceClient/AbeckDev.DoorController.DeviceClient/updateDoorClient.sh
+wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/main/DeviceClient/AbeckDev.DoorController.DeviceClient/DoorDeviceClient.service
+wget https://raw.githubusercontent.com/abeckDev/IoTDoorController/main/DeviceClient/AbeckDev.DoorController.DeviceClient/checkDeviceclient.sh
 chmod +x senddecimalcode.sh updateDoorClient.sh checkDeviceclient.sh
 
 # Installing Device Client

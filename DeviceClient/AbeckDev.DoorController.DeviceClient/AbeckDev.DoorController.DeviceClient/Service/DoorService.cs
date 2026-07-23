@@ -66,6 +66,11 @@ namespace AbeckDev.DoorController.DeviceClient.Service
             return false;
         }
 
+        public static bool IsNumericDecimalCode(string decimalCode)
+        {
+            return !string.IsNullOrWhiteSpace(decimalCode) && decimalCode.All(char.IsDigit);
+        }
+
         public static DoorRegistration GetDoorById(List<DoorRegistration> doorRegistrations, int doorId)
         {
             return doorRegistrations.FirstOrDefault(d => d.ID == doorId);

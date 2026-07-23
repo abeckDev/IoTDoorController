@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Threading;
 
 namespace AbeckDev.DoorController.DeviceClient.Model
 {
@@ -16,7 +14,7 @@ namespace AbeckDev.DoorController.DeviceClient.Model
 
         public int ActionCount { get; set; } = 0;
 
-        public bool isLocked { get; set; } = false;
+        public SemaphoreSlim CommandSemaphore { get; } = new(1, 1);
 
     }
 
